@@ -167,8 +167,6 @@ func (p *PNSExecutor) Wait(ctx context.Context, containerNames []string) error {
 // Polling is necessary because it is not possible to use something like fsnotify against procfs.
 func (p *PNSExecutor) pollRootProcesses(ctx context.Context, containerNames []string) {
 	start := time.Now()
-	ctx, cancel := context.WithTimeout(ctx, time.Minute)
-	defer cancel()
 	for {
 		select {
 		case <-ctx.Done():
@@ -179,7 +177,7 @@ func (p *PNSExecutor) pollRootProcesses(ctx context.Context, containerNames []st
 			}
 			// sidecars start after the main containers, so we can't just exit once we know about all the main containers,
 			// we need a bit more time
-			if p.haveContainerPIDs(containerNames) && time.Since(start) > 5*time.Second {
+			if p.haveContainerPIDs(containerNames) && time.Since(start) > time.Minute {
 				return
 			}
 			time.Sleep(50 * time.Millisecond)
